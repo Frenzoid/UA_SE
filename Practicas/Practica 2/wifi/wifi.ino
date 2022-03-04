@@ -1,6 +1,7 @@
 /** 
  * Author: MrFrenzoid 
  * Date: 04/03/2022
+ * Device: Arduino NANO 33 IoT With headers.
  * Libraries: WiFiNINA
  */
 
