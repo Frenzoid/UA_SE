@@ -11,7 +11,18 @@
 #define SSID        "arduino"
 #define PASSWORD    "okokokok"
 
+
+// Wifi retryies counter.
+int retrycount = 0;
+
+// wifi staus, used to stuff once connected once.
+bool connected = false;
+
+
 void setup() {
+  // setup serial output
+  Serial.begin(9600);
+  
   // Setup leds
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -28,9 +39,26 @@ void loop() {
    *  and if it succesfully connects, turn the led off.
    */
   if (WiFi.status() != WL_CONNECTED) {
-      led_blink(1000);
-      wifi_connect();
-  } else led_off();
+    if(connected == true) {
+      Serial.println("Connection lost!, retrying...");
+      connected = false;
+    }
+    
+    retrycount += 1;
+    led_blink(1000);
+    wifi_connect();
+
+    if ( retrycount == 5) Serial.println("Error connecting to wifi network " + (String)SSID + " after 5 tries, still retrying...");
+  } else {
+    if (!connected) {
+      
+      connected = true;
+      retrycount = 0;
+      led_off();
+      Serial.println("Wifi connected succefully!");
+      
+    }
+  }
 }
 
 void wifi_connect() {
