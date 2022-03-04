@@ -11,13 +11,8 @@
 #define SSID        "arduino"
 #define PASSWORD    "okokokok"
 
-
-// Wifi retryies counter.
-int retrycount = 0;
-
-// wifi staus, used to stuff once connected once.
+// Wifi status, used to avoid executing reduntant tasks, such as printing messages and managing leds.
 bool connected = false;
-
 
 void setup() {
   // setup serial output
@@ -37,32 +32,32 @@ void loop() {
   /** If the device is not connected to the wifi network,
    *  blink the led and try to connect,
    *  and if it succesfully connects, turn the led off.
+   *  
+   *  If the device was previusly connected, then show an error message.
    */
   if (WiFi.status() != WL_CONNECTED) {
     if(connected == true) {
-      Serial.println("Connection lost!, retrying...");
+      Serial.println("Connection lost!");
       connected = false;
     }
+        
+    led_off();    
+    led_blink(100, 700); // With 100ms per blink sequence, and 700ms per sequece = (5+4+3+2+1) * 100 + 5 * 700 = 5000ms = 5 seconds per retry.
+    Serial.println("Error connecting to wifi network '" + (String)SSID + "' after 5 seconds, retrying...");
     
-    retrycount += 1;
-    led_blink(1000);
     wifi_connect();
 
-    if ( retrycount == 5) Serial.println("Error connecting to wifi network " + (String)SSID + " after 5 tries, still retrying...");
   } else {
     if (!connected) {
-      
       connected = true;
-      retrycount = 0;
+      Serial.println("Wifi connected succefully!"); 
       led_off();
-      Serial.println("Wifi connected succefully!");
-      
     }
   }
 }
 
-void wifi_connect() {
-    WiFi.begin(SSID, PASSWORD);
+int wifi_connect() {
+  return WiFi.begin(SSID, PASSWORD);
 }
 
 void led_on() {
@@ -73,8 +68,16 @@ void led_off() {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void led_blink(int del) {
-  led_on();
-  delay(del);
-  led_off();
+void led_blink(int del_time, int seq_time) {
+  for (int i = 1; i <= 5; i++) {
+    for (int j = 1; j <= i; j++ ) {
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(del_time);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(del_time);
+    }
+    
+    // Time delay between blink sequences.
+    delay(seq_time);
+  }
 }
