@@ -42,10 +42,9 @@ void loop() {
   BLEDevice peripheral;
   
   // Every 5 seconds, check BLE Devices...
-  if (rtc.getSeconds() % 5 == 0) {
       // check if a peripheral has been discovered
       peripheral = BLE.available();
-  }
+  
 
   if (peripheral) {
     // discovered a peripheral
