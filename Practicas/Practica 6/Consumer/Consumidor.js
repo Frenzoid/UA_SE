@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 const client = mqtt.connect('mqtt://oldbox.cloud');
 
-let arduinos = [Array(30), Array(30), Array(30)];
+let arduinos = [Array(31), Array(31), Array(31)];
 
 client.on('connect', () => {
     client.subscribe('SE/practicaUA2022/murcia');
@@ -12,18 +12,19 @@ client.on('message', (topic, message) => {
     let msg_split = msg.split(':');
 
     switch (msg_split[0]) {
-        case 'alex': if (arduinos[0].length != 30) arduinos[0].push(msg_split[1]); break;
-        case 'fran': if (arduinos[1].length != 30) arduinos[1].push(msg_split[1]); break;
-        case 'javi': if (arduinos[2].length != 30) arduinos[2].push(msg_split[1]); break;
+        case 'alex': if (arduinos[0].length != 31) arduinos[0].push(msg_split[1]); break;
+        case 'fran': if (arduinos[1].length != 31) arduinos[1].push(msg_split[1]); break;
+        case 'javi': if (arduinos[2].length != 31) arduinos[2].push(msg_split[1]); break;
     }
 
-    if (arduinos.every(arduino => !arduino)) {
+    if (arduinos.every(arduino => arduino.length == 31)) {
         let a = median(arduinos[0]);
         let b = median(arduinos[1]);
         let c = median(arduinos[2]);
 
         let [x, y] = trilateration(a, b, c);
-        let arduinos = [Array(30), Array(30), Array(30)];
+        let arduinos = [Array(31), Array(31), Array(31)];
+
         client.publish('SE/practicaUA2022/murcia', [x, y].toString());
     }
 });
