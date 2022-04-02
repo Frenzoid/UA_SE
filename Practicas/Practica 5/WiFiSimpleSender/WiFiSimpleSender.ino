@@ -1,15 +1,15 @@
 /*
-  ArduinoMqttClient - WiFi Simple Receive
+  ArduinoMqttClient - WiFi Simple Sender
 
-  This example connects to a MQTT broker and subscribes to a single topic.
-  When a message is received it prints the message to the serial monitor.
+  This example connects to a MQTT broker and publishes a message to
+  a topic once a second.
 
   The circuit:
   - Arduino MKR 1000, MKR 1010 or Uno WiFi Rev.2 board
 
   This example code is in the public domain.
 */
-
+#include <Time.h>
 #include <ArduinoMqttClient.h>
 #if defined(ARDUINO_SAMD_MKRWIFI1010) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_AVR_UNO_WIFI_REV2)
   #include <WiFiNINA.h>
@@ -24,6 +24,16 @@
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 
+#include <WiFiUdp.h>
+#include <NTPClient.h>
+#include "time.h"
+
+WiFiUDP ntpUDP;
+// You can specify the time server pool and the offset (in seconds, can be
+// changed later with setTimeOffset() ). Additionally you can specify the
+// update interval (in milliseconds, can be changed using setUpdateInterval() ).
+NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 7200);
+
 // To connect with SSL/TLS:
 // 1) Change WiFiClient to WiFiSSLClient.
 // 2) Change port value from 1883 to 8883.
@@ -37,6 +47,9 @@ const char broker[] = "oldbox.cloud";
 int        port     = 1883;
 const char topic[]  = "SE/practicaUA2022/murcia";
 
+const long interval = 1000;
+unsigned long previousMillis = 0;
+
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
@@ -49,7 +62,7 @@ void setup() {
   Serial.println(ssid);
   while (WiFi.begin(ssid, pass) != WL_CONNECTED) {
     // failed, retry
-    Serial.print("Failed connection to WiFi, retrying...\n");
+    Serial.print(".");
     delay(5000);
   }
 
@@ -76,36 +89,49 @@ void setup() {
   Serial.println("You're connected to the MQTT broker!");
   Serial.println();
 
-  Serial.print("Subscribing to topic: ");
-  Serial.println(topic);
-  Serial.println();
-
-  // subscribe to a topic
-  mqttClient.subscribe(topic);
-
-  // topics can be unsubscribed using:
-  // mqttClient.unsubscribe(topic);
-
-  Serial.print("Waiting for messages on topic: ");
-  Serial.println(topic);
-  Serial.println();
+  timeClient.begin();
 }
 
 void loop() {
-  int messageSize = mqttClient.parseMessage();
-  if (messageSize) {
-    // we received a message, print out the topic and contents
-    Serial.print("Received a message with topic '");
-    Serial.print(mqttClient.messageTopic());
-    Serial.print("', length ");
-    Serial.print(messageSize);
-    Serial.println(" bytes:");
+  // call poll() regularly to allow the library to send MQTT keep alives which
+  // avoids being disconnected by the broker
+  mqttClient.poll();
 
-    // use the Stream interface to print the contents
-    while (mqttClient.available()) {
-      Serial.print((char)mqttClient.read());
-    }
-    Serial.println();
+  // avoid having delays in loop, we'll use the strategy from BlinkWithoutDelay
+  // see: File -> Examples -> 02.Digital -> BlinkWithoutDelay for more info
+  unsigned long currentMillis = millis();
+
+  time_t epochTime = timeClient.getEpochTime();
+  struct tm *ptm = gmtime ((time_t *)&epochTime);
+  int monthDay = ptm->tm_mday;
+  int currentMonth = ptm->tm_mon+1;
+  int currentYear = ptm->tm_year+1900;
+  String currentDate = String(monthDay) + "/" + String(currentMonth) + "/" + String(currentYear);
+  
+  if (currentMillis - previousMillis >= interval) {
+    // save the last time a message was sent
+    previousMillis = currentMillis;
+
+    timeClient.update();
+    Serial.print("Sending message to topic: ");
+    Serial.println(topic);
+    Serial.print("Alex | Fecha y Hora: ");
+    Serial.print(currentDate);
+    Serial.print(" - ");
+    Serial.print(timeClient.getFormattedTime());
+    int nrand = random(0,100);
+    Serial.print(" | nº random: ");
+    Serial.println(nrand);
+
+    // send message, the Print interface can be used to set the message contents
+    mqttClient.beginMessage(topic);
+    mqttClient.print("Alex | Fecha y Hora: ");
+    mqttClient.print(currentDate);
+    mqttClient.print(" - ");
+    mqttClient.print(timeClient.getFormattedTime());
+    mqttClient.print(" | nº random: ");
+    mqttClient.println(nrand);
+    mqttClient.endMessage();
 
     Serial.println();
   }
