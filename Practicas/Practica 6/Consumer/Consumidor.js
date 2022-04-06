@@ -1,12 +1,13 @@
 const mqtt = require('mqtt');
 const client = mqtt.connect('mqtt://oldbox.cloud');
 
-let arduinos = [Array(31), Array(31), Array(31)];
+let arduinos = [Array(), Array(), Array()];
 
 client.on('connect', () => {
     client.subscribe('SE/practicaUA2022/murcia');
 });
 
+// El mensaje recibido serla del formato nombre:valor
 client.on('message', (topic, message) => {
     let msg = message.toString();
     let msg_split = msg.split(':');
@@ -23,9 +24,9 @@ client.on('message', (topic, message) => {
         let c = median(arduinos[2]);
 
         let [x, y] = trilateration(a, b, c);
-        let arduinos = [Array(31), Array(31), Array(31)];
+        let arduinos = [Array(), Array(), Array()];
 
-        client.publish('SE/practicaUA2022/murcia', [x, y].toString());
+        client.publish('SE/practicaUA2022/arduinocloud', [x, y].toString());
     }
 });
 
