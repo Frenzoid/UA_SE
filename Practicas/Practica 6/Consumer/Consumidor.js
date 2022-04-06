@@ -13,9 +13,9 @@ client.on('message', (topic, message) => {
     let msg_split = msg.split(':');
 
     switch (msg_split[0]) {
-        case 'alex': if (arduinos[0].length != 31) arduinos[0].push(msg_split[1]); break;
-        case 'fran': if (arduinos[1].length != 31) arduinos[1].push(msg_split[1]); break;
-        case 'javi': if (arduinos[2].length != 31) arduinos[2].push(msg_split[1]); break;
+        case 'alex': if (arduinos[0].length <= 31) arduinos[0].push(msg_split[1]); break;
+        case 'fran': if (arduinos[1].length <= 31) arduinos[1].push(msg_split[1]); break;
+        case 'javi': if (arduinos[2].length <= 31) arduinos[2].push(msg_split[1]); break;
     }
 
     if (arduinos.every(arduino => arduino.length == 31)) {
@@ -39,7 +39,7 @@ function trilateration(a, b, c) {
 
 // obten la mediana de un array de valores
 function median(values) {
-    values.sort(function (a, b) { return a - b; });
+    values.sort((a, b) => a - b);
     let half = Math.floor(values.length / 2);
     if (values.length % 2)
         return values[half];
