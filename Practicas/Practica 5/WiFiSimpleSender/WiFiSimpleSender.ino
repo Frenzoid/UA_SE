@@ -1,12 +1,9 @@
 /*
   ArduinoMqttClient - WiFi Simple Sender
-
   This example connects to a MQTT broker and publishes a message to
   a topic once a second.
-
   The circuit:
   - Arduino MKR 1000, MKR 1010 or Uno WiFi Rev.2 board
-
   This example code is in the public domain.
 */
 #include <Time.h>
@@ -19,9 +16,10 @@
   #include <ESP8266WiFi.h>
 #endif
 
+#include "arduino_secrets.h"
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = "arduino";        // your network SSID (name)
-char pass[] = "okokokok";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = SECRET_SSID;        // your network SSID (name)
+char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 
 #include <WiFiUdp.h>
 #include <NTPClient.h>
@@ -42,7 +40,7 @@ NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 7200);
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
-const char broker[] = "test.mosquitto.org";
+const char broker[] = "oldbox.cloud";
 int        port     = 1883;
 const char topic[]  = "SE/practicaUA2022/murcia";
 
@@ -110,16 +108,26 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     // save the last time a message was sent
     previousMillis = currentMillis;
-    int nrand = random(0,100);
 
     timeClient.update();
     Serial.print("Sending message to topic: ");
     Serial.println(topic);
+    Serial.print("Alex | Fecha y Hora: ");
+    Serial.print(currentDate);
+    Serial.print(" - ");
+    Serial.print(timeClient.getFormattedTime());
+    int nrand = random(0,100);
+    Serial.print(" | nº random: ");
     Serial.println(nrand);
 
     // send message, the Print interface can be used to set the message contents
     mqttClient.beginMessage(topic);
-    mqttClient.print((float)nrand);
+    mqttClient.print("Alex | Fecha y Hora: ");
+    mqttClient.print(currentDate);
+    mqttClient.print(" - ");
+    mqttClient.print(timeClient.getFormattedTime());
+    mqttClient.print(" | nº random: ");
+    mqttClient.println(nrand);
     mqttClient.endMessage();
 
     Serial.println();

@@ -18,10 +18,10 @@ void setup() {
 
   setDebugMessageLevel(2);
   ArduinoCloud.printDebugInfo();
-  
+
   Serial.print("Attempting to connect to the MQTT broker: ");
   Serial.println(brokerMosq);
-  
+
    if (!mqttClient.connect(brokerMosq, portMosq)) {
     Serial.print("MQTT connection failed! Error code = ");
     Serial.println(mqttClient.connectError());
@@ -46,7 +46,7 @@ void setup() {
 
 void loop() {
   ArduinoCloud.update();
- 
+
   while (mqttClient.available()) {
     Serial.print((float)mqttClient.read());
     ejercicio = (float)mqttClient.read();
