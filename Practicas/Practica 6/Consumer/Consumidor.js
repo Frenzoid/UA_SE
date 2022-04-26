@@ -30,6 +30,10 @@ intensity.push(-93);
 intensity.push(-97);
 intensity.push(-99);
 
+// Adding three beacons for trilateration
+trilateration.addBeacon(0, trilateration.vector(2, 4));
+trilateration.addBeacon(1, trilateration.vector(5.5, 13));
+trilateration.addBeacon(2, trilateration.vector(11.5, 2));
 
 let arduinos = [[], [], []];
 
@@ -48,25 +52,22 @@ client.on('message', (topic, message) => {
         case 'javi': if (arduinos[2].length <= 31) arduinos[2].push(inte); break;
     }
 
-    if (arduinos.every(arduino => arduino.length == 31)) {
+    if (arduinos.every(arduino => arduino.length == 3)) {
+        console.log("Sincronizando barrido de arduinos, calculando posición...");
         let a = obtenDistancia(median(arduinos[0]));
         let b = obtenDistancia(median(arduinos[1]));
         let c = obtenDistancia(median(arduinos[2]));
 
-        let pos = trilateration(a, b, c);
+        let pos = trilaterationProcess(a, b, c);
         let arduinos = [[], [], []];
 
         client.publish('SE/practicaUA2022/arduinocloud', `${pos.x},${pos.y}`);
+        console.log(`Coords: ${pos.x},${pos.y}`);
     }
 });
 
 // function de trilateracion en dos dimensiones
-function trilateration(a, b, c) {
-
-    // Adding three beacons
-    trilateration.addBeacon(0, trilateration.vector(2, 4));
-    trilateration.addBeacon(1, trilateration.vector(5.5, 13));
-    trilateration.addBeacon(2, trilateration.vector(11.5, 2));
+function trilaterationProcess(a, b, c) {
 
     // Setting the beacons distances
     trilateration.setDistance(0, a);
@@ -91,7 +92,8 @@ function median(values) {
 
 // Obtiene la distancia basada en la intensitynsidad
 function obtenDistancia(ints) {
+    if (ints >= -43) return 0;
     let pos = intensity.findIndex((element) => ints >= element);
-    console.log(pos, distance[pos], distance[pos - 1], intensity[pos], intensity[pos - 1]);
+    // console.log(pos, distance[pos], distance[pos - 1], intensity[pos], intensity[pos - 1]);
     return distance[pos - 1] + (ints - intensity[pos - 1]) * ((distance[pos] - distance[pos - 1]) / (intensity[pos] - intensity[pos - 1]));
 }
