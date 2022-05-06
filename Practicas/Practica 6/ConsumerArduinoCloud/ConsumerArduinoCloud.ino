@@ -78,15 +78,15 @@ void loop() {
       if (character != ',' && !next) {
         x_string += (char)mqttClient.read();
       } else if (character == ',') {
-        x = (int)x_string;
+        x = (float)x_string;
         next = TRUE;
       } else if ( character != ',' && next) {
         y_string += (char)mqttClient.read();
       }
     }
-    
-    y = (int)y_string;
+    y = (float)y_string;
   }
+}
 
-  void onDataChange()  {}
-  void onEjercicioChange()  {}
+void onDataChange()  {}
+void onEjercicioChange()  {}
