@@ -140,7 +140,7 @@ void loop() {
 
     // send message, the Print interface can be used to set the message contents
     mqttClient.beginMessage(topic);
-    mqttClient.print("fran:");
+    mqttClient.print("alex:");
     mqttClient.print(rssi);
     mqttClient.endMessage();
 

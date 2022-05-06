@@ -31,6 +31,11 @@ intensity.push(-97);
 intensity.push(-99);
 
 
+// Adding three beacons
+trilateration.addBeacon(0, trilateration.vector(1, 0));
+trilateration.addBeacon(1, trilateration.vector(0, 2));
+trilateration.addBeacon(2, trilateration.vector(2, 2));
+
 let arduinos = [[], [], []];
 
 client.on('connect', () => {
@@ -41,32 +46,30 @@ client.on('connect', () => {
 client.on('message', (topic, message) => {
     let msg = message.toString();
     let [arduino, inte] = msg.split(':');
+    console.log(msg);
 
     switch (arduino) {
-        case 'alex': if (arduinos[0].length <= 31) arduinos[0].push(inte); break;
-        case 'fran': if (arduinos[1].length <= 31) arduinos[1].push(inte); break;
-        case 'javi': if (arduinos[2].length <= 31) arduinos[2].push(inte); break;
+        case 'fran': if (arduinos[0].length <= 31) arduinos[0].push(inte); break;
+        case 'javi': if (arduinos[1].length <= 31) arduinos[1].push(inte); break;
+        case 'alex': if (arduinos[2].length <= 31) arduinos[2].push(inte); break;
     }
 
-    if (arduinos.every(arduino => arduino.length == 31)) {
+    if (arduinos.every(arduino => arduino.length == 1)) {
         let a = obtenDistancia(median(arduinos[0]));
         let b = obtenDistancia(median(arduinos[1]));
         let c = obtenDistancia(median(arduinos[2]));
 
-        let pos = trilateration(a, b, c);
+        let pos = trilaterationProcess(a, b, c);
         let arduinos = [[], [], []];
 
-        client.publish('SE/practicaUA2022/arduinocloud', `${pos.x},${pos.y}`);
+        // client.publish('SE/practicaUA2022/arduinocloud', `${pos.x},${pos.y}`);
+
+        console.log(`${pos.x},${pos.y}`);
     }
 });
 
 // function de trilateracion en dos dimensiones
-function trilateration(a, b, c) {
-
-    // Adding three beacons
-    trilateration.addBeacon(0, trilateration.vector(2, 4));
-    trilateration.addBeacon(1, trilateration.vector(5.5, 13));
-    trilateration.addBeacon(2, trilateration.vector(11.5, 2));
+function trilaterationProcess(a, b, c) {
 
     // Setting the beacons distances
     trilateration.setDistance(0, a);
