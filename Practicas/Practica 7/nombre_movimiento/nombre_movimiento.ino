@@ -61,14 +61,14 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
 
-  testdrawchar();      // Draw characters of the default font
+  typeText("Elvi");
 }
 
 void loop() {
   display.startscrollright(0x00, 0x0F);
 }
 
-void testdrawchar(void) {
+void typeText(String text) {
   display.clearDisplay();
 
   display.setTextSize(4);      // Normal 1:1 pixel scale
@@ -76,8 +76,6 @@ void testdrawchar(void) {
   display.setCursor(0, 0);     // Start at top-left corner
   display.cp437(true);         // Use full 256 char 'Code Page 437' font
 
-  display.println("Elvi");
-
+  display.println(text);
   display.display();
-  delay(2000);
 }

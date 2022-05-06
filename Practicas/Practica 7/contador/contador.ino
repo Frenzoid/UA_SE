@@ -61,14 +61,14 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
 
-  testdrawchar();      // Draw characters of the default font
+  countDown(60);
 }
 
 void loop() {
 }
 
-void testdrawchar(void) {
-  for (int i = 60; i >= 0; i--) { 
+void countDown(int count) {
+  for (int i = count; i >= 0; i--) { 
     display.clearDisplay();
     
     display.setTextSize(4);      // Normal 1:1 pixel scale
