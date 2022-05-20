@@ -186,15 +186,16 @@ void loop() {
     //If a heart beat is detected
     if (checkForBeat(irValue) == true) {
         showHeartBeatValue();
+        timeClient.update(); 
+        Serial.println(timeClient.getFormattedTime());
+      
+        String msg = "{heartRate:" + (String)beatAvg + ", name:'alex-elvi',time:'" + (String)timeClient.getFormattedTime() + "'}";
+        DynamicJsonDocument jsonMsg = toJsonDocument(msg);
+        firebaseDatabasePut(DEVICE_ID, jsonMsg);
+      }
     }
 
-    timeClient.update(); 
-    Serial.println(timeClient.getFormattedTime());
-  
-    String msg = "{heartRate:" + (String)beatAvg + ", name:'alex-elvi',time:'" + (String)timeClient.getFormattedTime() + "'}";
-    DynamicJsonDocument jsonMsg = toJsonDocument(msg);
-    firebaseDatabasePut(DEVICE_ID, jsonMsg);
-  }
+
 
   // If no finger is detected it inform the user and put the average BPM to 0 or it will be stored for the next measure
   else {       
